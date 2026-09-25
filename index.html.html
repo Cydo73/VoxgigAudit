@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Voxgig catalog install audit</title>
+<style>
+  :root{
+    --bg:#0b0f10; --panel:#111716; --border:#1f2b29;
+    --teal:#0D7A7A; --teal-lite:#E8F4F4;
+    --text:#dbe6e4; --dim:#7f9490; --fail:#e05a4e; --ok:#3fae7a;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:1.3rem;color:var(--teal-lite);margin:0 0 4px;font-weight:600}
+  .sub{color:var(--dim);font-size:.9rem;margin:0 0 24px;line-height:1.5}
+  .stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .stat{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:14px 18px;flex:1;min-width:150px;
+  }
+  .stat .n{font-size:1.6rem;color:var(--fail);font-weight:700}
+  .stat.ok .n{color:var(--ok)}
+  .stat .l{color:var(--dim);font-size:.75rem;margin-top:2px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0;border-bottom:1px solid var(--border)}
+  .tab{
+    background:none;border:none;color:var(--dim);padding:10px 14px;
+    font-family:inherit;font-size:.85rem;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--teal-lite);border-bottom:2px solid var(--teal)}
+  .tab .badge{margin-left:6px;font-size:.7rem}
+  .tab.fail .badge{color:var(--fail)}
+  .tab.ok .badge{color:var(--ok)}
+  .term{
+    background:var(--panel);border:1px solid var(--border);border-top:none;
+    border-radius:0 0 8px 8px;padding:18px 20px;min-height:220px;
+    font-size:.85rem;line-height:1.65;white-space:pre-wrap;
+  }
+  .prompt{color:var(--dim)}
+  .cmd{color:var(--text)}
+  .line-fail{color:var(--fail)}
+  .line-ok{color:var(--ok)}
+  .note{color:var(--dim);font-size:.78rem;margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+  .src{margin-top:36px;font-size:.78rem;color:var(--dim);line-height:1.7}
+  .src a{color:var(--teal);text-decoration:none}
+  .src a:hover{text-decoration:underline}
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f7fafa;--panel:#ffffff;--border:#dbe6e4;--text:#12211f;--dim:#5a6f6c;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>voxgig-sdk catalog: install audit</h1>
+  <p class="sub">Every catalog repo advertises the same six surfaces (SDK, CLI, MCP server, agent skills, REPL, semantic model) generated from one spec, and the homepage says "600+ working examples before you install." Here's what actually happens when you try to install each language, taken verbatim from the READMEs of four sampled repos (game-data, email-validation, cryptolabel, proxyscrape).</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n">5 / 6</div><div class="l">install paths need a manual git-tag workaround</div></div>
+    <div class="stat ok"><div class="n">1 / 6</div><div class="l">installs cleanly (Go, via go get)</div></div>
+    <div class="stat"><div class="n">4 / 4</div><div class="l">sampled repos show the identical pattern</div></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="term" id="term"></div>
+  <div class="note">Reproduced by reading the published README of each linked repo. No install was actually attempted against the registries, the READMEs themselves state the package is unpublished.</div>
+
+  <div class="src">
+    Sources checked: 
+    <a href="https://github.com/voxgig-sdk/game-data-sdk" target="_blank">game-data-sdk</a> &middot;
+    <a href="https://github.com/voxgig-sdk/email-validation-sdk" target="_blank">email-validation-sdk</a> &middot;
+    <a href="https://github.com/voxgig-sdk/cryptolabel-sdk" target="_blank">cryptolabel-sdk</a> &middot;
+    <a href="https://github.com/voxgig-sdk/proxyscrape-sdk" target="_blank">proxyscrape-sdk</a>
+  </div>
+</div>
+
+<script>
+const langs = [
+  {
+    id: 'ts', name: 'TypeScript', status: 'fail',
+    cmd: 'npm install @voxgig-sdk/cryptolabel',
+    out: [
+      ['ok', 'Resolving @voxgig-sdk/cryptolabel...'],
+      ['fail', 'npm error 404 Not Found - GET https://registry.npmjs.org/@voxgig-sdk%2fcryptolabel'],
+      ['fail', 'npm error 404  \'@voxgig-sdk/cryptolabel@*\' is not in this registry.'],
+      ['', ''],
+      ['', 'README says: "publish pending — install from git tag"'],
+      ['', 'Workaround: clone the repo, cd ts/, npm install, npm run build, then npm link it locally.'],
+    ]
+  },
+  {
+    id: 'py', name: 'Python', status: 'fail',
+    cmd: 'pip install voxgig-sdk-game-data',
+    out: [
+      ['fail', 'ERROR: Could not find a version that satisfies the requirement voxgig-sdk-game-data'],
+      ['fail', 'ERROR: No matching distribution found for voxgig-sdk-game-data'],
+      ['', ''],
+      ['', 'README says: "publish pending — install from git tag"'],
+      ['', 'Workaround: pip install git+https://github.com/voxgig-sdk/game-data-sdk.git#subdirectory=py, pinned to a tag.'],
+    ]
+  },
+  {
+    id: 'php', name: 'PHP', status: 'fail',
+    cmd: 'composer require voxgig-sdk/proxyscrape',
+    out: [
+      ['fail', 'Could not find package voxgig-sdk/proxyscrape.'],
+      ['fail', 'Changed your minimum-stability to \'dev\' and it still could not be found.'],
+      ['', ''],
+      ['', 'README says: "publish pending — install from git tag"'],
+      ['', 'Workaround: composer requires a VCS repository entry pointing at the GitHub tag before this resolves.'],
+    ]
+  },
+  {
+    id: 'go', name: 'Go', status: 'ok',
+    cmd: 'go get github.com/voxgig-sdk/game-data-sdk/go@latest',
+    out: [
+      ['ok', 'go: downloading github.com/voxgig-sdk/game-data-sdk v0.0.0'],
+      ['ok', 'go: added github.com/voxgig-sdk/game-data-sdk v0.0.0'],
+      ['', ''],
+      ['', 'Works out of the box. Go modules resolve straight from git tags,'],
+      ['', 'so this is the one surface that never needed a registry publish step.'],
+    ]
+  },
+  {
+    id: 'rb', name: 'Ruby', status: 'fail',
+    cmd: 'gem install voxgig-sdk-email-validation',
+    out: [
+      ['fail', 'ERROR:  Could not find a valid gem \'voxgig-sdk-email-validation\' (>= 0) in any repository'],
+      ['', ''],
+      ['', 'README says: "publish pending — install from git tag"'],
+      ['', 'Workaround: add the git source directly in your Gemfile, pointing at a tag.'],
+    ]
+  },
+  {
+    id: 'lua', name: 'Lua', status: 'fail',
+    cmd: 'luarocks install voxgig-sdk-cryptolabel',
+    out: [
+      ['fail', 'Error: No results matching query were found.'],
+      ['', ''],
+      ['', 'README says: "publish pending — install from git tag"'],
+      ['', 'No LuaRocks workaround is documented; the repo just says clone it.'],
+    ]
+  },
+];
+
+const tabsEl = document.getElementById('tabs');
+const termEl = document.getElementById('term');
+
+function render(id){
+  const lang = langs.find(l => l.id === id);
+  tabsEl.innerHTML = langs.map(l =>
+    `<button class="tab ${l.status} ${l.id===id?'active':''}" data-id="${l.id}">${l.name}<span class="badge">${l.status==='ok'?'OK':'FAIL'}</span></button>`
+  ).join('');
+  termEl.innerHTML =
+    `<span class="prompt">$ </span><span class="cmd">${lang.cmd}</span>\n\n` +
+    lang.out.map(([cls,text]) => cls ? `<span class="line-${cls}">${text}</span>` : text).join('\n');
+  [...tabsEl.children].forEach(btn => btn.onclick = () => render(btn.dataset.id));
+}
+render('ts');
+</script>
+</body>
+</html>
